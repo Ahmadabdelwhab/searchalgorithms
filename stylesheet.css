@@ -3,14 +3,19 @@
     grid-template-columns: repeat(10, 50px); /* Adjust based on your matrix size */
     grid-template-rows: repeat(10, 50px); /* Adjust based on your matrix size */
     gap: 1px;
+    border:2;
+    background-color: turquoise;
 }
 
 .cell {
     width: 50px;
     height: 50px;
     background-color:brown;
-    border: 1px solid black;
+    border: 2px;
+    border-radius: 50%;
 }
+
+
 
 .wall {
     background-color: gray; /* Color for wall cells */
