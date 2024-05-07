@@ -95,13 +95,14 @@ class Maze {
 
             // Set the cell as blocked
             grid[x][y] = new Cell(true);
+            grid[x][y].cost = Math.floor(Math.random() * 15) + 1;
         }
 
         // Fill the remaining cells as unblocked and assign cost
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 if (grid[i][j] === null) {
-                    const cost = Math.floor(Math.random() * 3) + 1; // Generate a random cost from 1 to 20
+                    const cost = Math.floor(Math.random() * 15) + 1; // Generate a random cost from 1 to 20
                     grid[i][j] = new Cell(false);
                     grid[i][j].cost = cost;
                 }
@@ -133,7 +134,7 @@ class Maze {
                 cellDiv.style.display = "flex"
                 cellDiv.style.justifyContent = "center"
                 cellDiv.style.alignItems = "center"
-                cellDiv.textContent = this.grid[i][j].cost
+                cellDiv.textContent = this.grid[i][j].blocked ? "" : this.grid[i][j].cost
                 const cellStyle = cell.styleCell();
                 for (const [key, value] of Object.entries(cellStyle)) {
                     cellDiv.style[key] = value;
@@ -152,6 +153,8 @@ class Maze {
                 this.grid[i][j].isInStack = false;
                 this.grid[i][j].isInOrder = false;
                 this.grid[i][j].isInPriorityQueue = false;
+                this.grid[i][j].start = false;
+                this.grid[i][j].goal = false;
             }
         }
     }
@@ -176,7 +179,7 @@ class Maze {
                 path.push([x, y]);
                 if (x === goal[0] && y === goal[1]) {
                     renderPath(path);
-                    return
+                    return path
                 }
     
                 // Explore neighboring cells
@@ -233,7 +236,7 @@ class Maze {
                 path.push([x, y]);
                 if (x === goal[0] && y === goal[1]) {
                     renderPath(path)
-                    return
+                    return path
                 }
     
                 // Explore neighboring cells
@@ -291,7 +294,7 @@ class Maze {
                 if (JSON.stringify(current) === JSON.stringify(goal)){
                     let path  = this.reconstructPath(cameFrom, current);
                     renderPath(path);
-                    return
+                    return path
                 }
                 this.grid[current[0]][current[1]].isInOrder = true;
                 this.renderGrid()
@@ -354,7 +357,7 @@ uniformCostSearch(start, goal , renderPath) {
             if (JSON.stringify(current) === JSON.stringify(goal)){
                 let path  = this.reconstructPath(cameFrom, current);
                 renderPath(path);
-                return
+                return path
             }
             this.grid[current[0]][current[1]].isInOrder = true;
             this.renderGrid()
@@ -416,7 +419,7 @@ greedyHeuristicSearch(start, goal , renderPath) {
             if (JSON.stringify(current) === JSON.stringify(goal)){
                 let path = this.reconstructPath(cameFrom, current);
                 renderPath(path);
-                return;
+                return path;
             }
 
             this.grid[current[0]][current[1]].isInOrder = true;
@@ -483,6 +486,11 @@ greedyHeuristicSearch(start, goal , renderPath) {
         this.renderGrid()
     }
     navigateMaze(start, goal, navigationFunction) {
+            if(this.grid[start[0]][start[1]].blocked)
+                this.grid[start[0]][start[1]].blocked = false;
+                
+            if(this.grid[goal[0]][goal[1]].blocked)
+                this.grid[goal[0]][goal[1]].blocked = false;
             this.resetCell()
             this.renderGrid()
             let path = null
@@ -505,7 +513,7 @@ greedyHeuristicSearch(start, goal , renderPath) {
             }
             else 
                 console.log("Path not found.");
-            
+                
             return path;
     }
 
@@ -550,5 +558,5 @@ document.getElementById("navigateButton").addEventListener("click", function() {
     }
 
     // Call function to navigate maze with the provided coordinates
-    maze.navigateMaze([startX, startY], [goalX, goalY], document.getElementById("search-method").value);
+    maze.navigateMaze([startX - 1, startY - 1], [goalX - 1, goalY - 1], document.getElementById("search-method").value);
 });
