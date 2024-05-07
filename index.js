@@ -7,38 +7,34 @@ class Cell {
         this.isInStack = false;
         this.isInOrder = false;
         this.isInPriorityQueue = false;
-        this.isInClosedSet = false;
         this.cost = null;
         this.start = false;
-        this.goal = false
+        this.goal = false;
         this.cellStyle = {
-            backgroundColor: "white",
-
+            backgroundColor: "#349090",
         };
     }
     styleCell(){
         if(this.blocked)
-            this.cellStyle.backgroundColor = "black";
-        else if(this.isPath)
-            this.cellStyle.backgroundColor = "pink"
+            this.cellStyle.backgroundColor = "#3B322C";
         else if(this.start)
-            this.cellStyle.backgroundColor = "yellow";
+            this.cellStyle.backgroundColor = "#ff6b6b";
         else if(this.goal)
-            this.cellStyle.backgroundColor = "purple";
+            this.cellStyle.backgroundColor = "#ffe66d";
+        else if(this.isPath)
+            this.cellStyle.backgroundColor = "#fbb5b1"
         else if(this.isInOrder)
-            this.cellStyle.backgroundColor = "red";
-        else if(this.isInClosedSet)
-            this.cellStyle.backgroundColor = "#333"
+            this.cellStyle.backgroundColor = "#FFA96C";
         else if (this.isInPriorityQueue)
-            this.cellStyle.backgroundColor = "#00008B"
+            this.cellStyle.backgroundColor = "#FFC86D"
         else if(this.isInStack)
-            this.cellStyle.backgroundColor = "blue";
+            this.cellStyle.backgroundColor = "#A3E6DE";
         else if(this.isInQueue)
-            this.cellStyle.backgroundColor = "#333333";
+            this.cellStyle.backgroundColor = "#B5446E";
         else if(this.isVisited)
-            this.cellStyle.backgroundColor = "green";
+            this.cellStyle.backgroundColor = "#BADEFC";
         else 
-            this.cellStyle.backgroundColor = "white";
+            this.cellStyle.backgroundColor = "#349090";
                 return this.cellStyle;
     }
     
@@ -70,15 +66,14 @@ class PriorityQueue {
     }
 }
 
-function manhattanDistance(a, b) {
-    return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
-}
-
 class Maze {
-    constructor(rows = 5 , cols = 5, numBlockedCells = 5) {
+    constructor(rows = 5 , cols = 5, numBlockedCells = 5 , speed = 500) {
         this.rows = rows;
         this.cols = cols;
         this.grid = this.initializeGrid(numBlockedCells);
+        document.getElementById("maze-container").style.gridTemplateColumns = `repeat(${cols}, 50px)`
+        document.getElementById("maze-container").style.gridTemplateRows = `repeat(${rows}, 50px)`
+        this.speed = speed;
         this.renderGrid()
     }
 
@@ -106,7 +101,7 @@ class Maze {
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 if (grid[i][j] === null) {
-                    const cost = Math.floor(Math.random() * 10) + 1; // Generate a random cost from 1 to 20
+                    const cost = Math.floor(Math.random() * 3) + 1; // Generate a random cost from 1 to 20
                     grid[i][j] = new Cell(false);
                     grid[i][j].cost = cost;
                 }
@@ -148,7 +143,19 @@ class Maze {
             container.appendChild(rowDiv);
         }
     }
-    dfs(start, goal){
+    resetCell(){
+        for (let i = 0; i < this.rows; i++){
+            for (let j = 0; j < this.cols; j++){
+                this.grid[i][j].isPath = false;
+                this.grid[i][j].isVisited = false;
+                this.grid[i][j].isInQueue = false;
+                this.grid[i][j].isInStack = false;
+                this.grid[i][j].isInOrder = false;
+                this.grid[i][j].isInPriorityQueue = false;
+            }
+        }
+    }
+    dfs(start, goal , renderPath){
         this.grid[start[0]][start[1]].start = true;
         this.grid[goal[0]][goal[1]].goal = true;
         const stack = [[start[0], start[1]]];
@@ -157,6 +164,7 @@ class Maze {
         this.renderGrid();
         const dfsStep = () => {
             if (stack.length) {
+                this.renderGrid();
                 const [x, y] = stack.pop();
     
                 // Update the cell properties
@@ -167,7 +175,8 @@ class Maze {
                 // Add the coordinates to the path
                 path.push([x, y]);
                 if (x === goal[0] && y === goal[1]) {
-                    return path;
+                    renderPath(path);
+                    return
                 }
     
                 // Explore neighboring cells
@@ -194,18 +203,16 @@ class Maze {
     
                 // Render the grid after each iteration
                 this.renderGrid();
-                this.grid[x][y].inOrder = false;
-    
+                this.grid[x][y].isInOrder = false;
+                
                 i++; // Move to the next iteration
-                setTimeout(dfsStep, 300); // Call dfsStep again after 1000 milliseconds (1 second)
+                setTimeout(dfsStep, this.speed); // Call dfsStep again after 1000 milliseconds (1 second)
             }
         };
-    
+        this.renderGrid()
         return dfsStep(); // Start the depth-first search
-        
-             
     }
-    bfs(start, goal) {
+    bfs(start, goal , renderPath) {
         this.grid[start[0]][start[1]].start = true;
         this.grid[goal[0]][goal[1]].goal = true;
         const queue = [[start[0], start[1]]];
@@ -216,16 +223,17 @@ class Maze {
         const bfsStep = () => {
             if (queue.length) {
                 const [x, y] = queue.shift(); // Dequeue the first element from the queue
-    
+                
                 // Update the cell properties
                 this.grid[x][y].isInQueue = false;
-                this.grid[x][y].inOrder = true;
+                this.grid[x][y].isInOrder = true;
                 this.grid[x][y].isVisited = true;
     
                 // Add the coordinates to the path
                 path.push([x, y]);
                 if (x === goal[0] && y === goal[1]) {
-                    return path;
+                    renderPath(path)
+                    return
                 }
     
                 // Explore neighboring cells
@@ -252,16 +260,16 @@ class Maze {
 
                 // Render the grid after each iteration
                 this.renderGrid();
-                this.grid[x][y].inOrder = false;
+                this.grid[x][y].isInOrder = false;
     
                 i++; // Move to the next iteration
-                setTimeout(bfsStep, 3000); // Call bfsStep again after 1000 milliseconds (1 second)
+                setTimeout(bfsStep, this.speed); // Call bfsStep again after 1000 milliseconds (1 second)
             }
         };
         this.renderGrid()
         return bfsStep(); // Start the breadth-first search
     }
-    aStar(start, goal) {
+    aStar(start, goal , renderPath) {
         // Initialize open set, closed set, and maps
         this.grid[start[0]][start[1]].start = true;
         this.grid[goal[0]][goal[1]].goal = true;
@@ -270,21 +278,23 @@ class Maze {
         const cameFrom = new Map();
         const gScore = new Map();
         const fScore = new Map();
-
+        let i =0 
         gScore.set(JSON.stringify(start), 0);
         fScore.set(JSON.stringify(start), this.heuristic(start, goal));
         this.renderGrid()
         // Start the search
         const aStarStep = () => {
-            while(!openSet.isEmpty()) {
+            if(!openSet.isEmpty()) {
                 const current  = JSON.parse(openSet.dequeue());
+                this.grid[current[0]][current[1]].isInPriorityQueue = false;
+                this.grid[current[0]][current[1]].isInOrder= true;
                 if (JSON.stringify(current) === JSON.stringify(goal)){
-                    return this.reconstructPath(cameFrom, current);
+                    let path  = this.reconstructPath(cameFrom, current);
+                    renderPath(path);
+                    return
                 }
-                console.log(current)
                 this.grid[current[0]][current[1]].isInOrder = true;
                 this.renderGrid()
-                console.log("current : " , current)
                 const [x,y] = current
                 const neighbors = [];
                     if (y + 1 < this.cols && !this.grid[x][y + 1].blocked) {
@@ -300,22 +310,155 @@ class Maze {
                         neighbors.push([x - 1, y]); // Up
                     }
                 for (let neighbor of neighbors){
-                    const tentativeGScore = gScore.get(JSON.stringify(current)) + this.grid[x][y].cost;
+                    const tentativeGScore = gScore.get(JSON.stringify(current)) + this.grid[neighbor[0]][neighbor[1]].cost;
                     if (!gScore.has(JSON.stringify(neighbor)) || tentativeGScore < gScore.get(JSON.stringify(neighbor))){
                         cameFrom.set(JSON.stringify(neighbor), current);
                         gScore.set(JSON.stringify(neighbor), tentativeGScore);
                         fScore.set(JSON.stringify(neighbor), gScore.get(JSON.stringify(neighbor)) + this.heuristic(neighbor, goal));
                         if (!openSet.includes(JSON.stringify(neighbor)))
+                        { 
                             openSet.enqueue(JSON.stringify(neighbor), fScore.get(JSON.stringify(neighbor)))
+                            this.grid[neighbor[0]][neighbor[1]].isInPriorityQueue = true;
+                        }
                     }
                 }
-        };
-        this.renderGrid()
-        setTimeout(aStarStep, 500); // Call aStarStep again after 1000 milliseconds (1 second)
-        // Start the search
+                this.renderGrid();
+                this.grid[x][y].isInOrder = false;
+                i++
+                setTimeout(aStarStep, this.speed); 
+            };
+        
     }
+    this.renderGrid();
     return aStarStep();
 }
+uniformCostSearch(start, goal , renderPath) {
+    // Initialize open set, closed set, and maps
+    this.grid[start[0]][start[1]].start = true;
+    this.grid[goal[0]][goal[1]].goal = true;
+    const openSet = new PriorityQueue();
+    openSet.enqueue(JSON.stringify(start), 0);
+    const cameFrom = new Map();
+    const gScore = new Map();
+    const fScore = new Map();
+    let i =0 
+    gScore.set(JSON.stringify(start), 0);
+    fScore.set(JSON.stringify(start), this.heuristic(start, goal));
+    this.renderGrid()
+    // Start the search
+    const uniformCostSearchStep = () => {
+        if(!openSet.isEmpty()) {
+            const current  = JSON.parse(openSet.dequeue());
+            this.grid[current[0]][current[1]].isInPriorityQueue = false;
+            this.grid[current[0]][current[1]].isInOrder= true;
+            if (JSON.stringify(current) === JSON.stringify(goal)){
+                let path  = this.reconstructPath(cameFrom, current);
+                renderPath(path);
+                return
+            }
+            this.grid[current[0]][current[1]].isInOrder = true;
+            this.renderGrid()
+            const [x,y] = current
+            const neighbors = [];
+                if (y + 1 < this.cols && !this.grid[x][y + 1].blocked) {
+                    neighbors.push([x, y + 1]); // Right
+                }
+                if (x + 1 < this.rows && !this.grid[x + 1][y].blocked) {
+                    neighbors.push([x + 1, y]); // Down
+                }
+                if (y - 1 >= 0 && !this.grid[x][y - 1].blocked) {
+                    neighbors.push([x, y - 1]); // Left
+                }
+                if (x - 1 >= 0 && !this.grid[x - 1][y].blocked) {
+                    neighbors.push([x - 1, y]); // Up
+                }
+            for (let neighbor of neighbors){
+                const tentativeGScore = gScore.get(JSON.stringify(current)) + this.grid[neighbor[0]][neighbor[1]].cost;
+                if (!gScore.has(JSON.stringify(neighbor)) || tentativeGScore < gScore.get(JSON.stringify(neighbor))){
+                    cameFrom.set(JSON.stringify(neighbor), current);
+                    gScore.set(JSON.stringify(neighbor), tentativeGScore);
+                    fScore.set(JSON.stringify(neighbor), gScore.get(JSON.stringify(neighbor)));
+                    if (!openSet.includes(JSON.stringify(neighbor)))
+                    { 
+                        openSet.enqueue(JSON.stringify(neighbor), fScore.get(JSON.stringify(neighbor)))
+                        this.grid[neighbor[0]][neighbor[1]].isInPriorityQueue = true;
+                    }
+                }
+            }
+            this.renderGrid();
+            this.grid[x][y].isInOrder = false;
+            i++
+            setTimeout(uniformCostSearchStep, this.speed); 
+        };
+    
+}
+this.renderGrid();
+return uniformCostSearchStep();
+}
+greedyHeuristicSearch(start, goal , renderPath) {
+    // Initialize open set, closed set, and maps
+    this.grid[start[0]][start[1]].start = true;
+    this.grid[goal[0]][goal[1]].goal = true;
+    const openSet = new PriorityQueue();
+    openSet.enqueue(JSON.stringify(start), 0); // Using the heuristic value as the priority
+    const cameFrom = new Map();
+    const fScore = new Map();
+    fScore.set(JSON.stringify(start), this.heuristic(start, goal)); // Initialize f-score with heuristic
+    this.renderGrid();
+
+    // Start the search
+    const greedyHeuristicStep = () => {
+        if(!openSet.isEmpty()) {
+            const current = JSON.parse(openSet.dequeue());
+            this.grid[current[0]][current[1]].isInPriorityQueue = false;
+            this.grid[current[0]][current[1]].isInOrder = true;
+
+            if (JSON.stringify(current) === JSON.stringify(goal)){
+                let path = this.reconstructPath(cameFrom, current);
+                renderPath(path);
+                return;
+            }
+
+            this.grid[current[0]][current[1]].isInOrder = true;
+            this.renderGrid();
+
+            const [x, y] = current;
+            const neighbors = [];
+
+            if (y + 1 < this.cols && !this.grid[x][y + 1].blocked) {
+                neighbors.push([x, y + 1]); // Right
+            }
+            if (x + 1 < this.rows && !this.grid[x + 1][y].blocked) {
+                neighbors.push([x + 1, y]); // Down
+            }
+            if (y - 1 >= 0 && !this.grid[x][y - 1].blocked) {
+                neighbors.push([x, y - 1]); // Left
+            }
+            if (x - 1 >= 0 && !this.grid[x - 1][y].blocked) {
+                neighbors.push([x - 1, y]); // Up
+            }
+
+            for (let neighbor of neighbors) {
+                if (!fScore.has(JSON.stringify(neighbor))) {
+                    cameFrom.set(JSON.stringify(neighbor), current);
+                    fScore.set(JSON.stringify(neighbor), this.heuristic(neighbor, goal)); // Update f-score with heuristic
+                    openSet.enqueue(JSON.stringify(neighbor), fScore.get(JSON.stringify(neighbor))); // Enqueue with heuristic as priority
+                    this.grid[neighbor[0]][neighbor[1]].isInPriorityQueue = true;
+                }
+            }
+
+            this.renderGrid();
+            this.grid[x][y].isInOrder = false;
+            
+            setTimeout(greedyHeuristicStep, this.speed); 
+        }
+    };
+
+    this.renderGrid();
+    return greedyHeuristicStep();
+}
+
+
     // Helper function to calculate heuristic (Manhattan distance)
     reconstructPath(cameFrom, current) {
         const totalPath = [current];
@@ -328,25 +471,34 @@ class Maze {
     
     }
     heuristic(a, b) {
-        return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+        return Math.abs(a[0] - b[0]) * 2 + Math.abs(a[1] - b[1]) * 2;
     }
     color_path(path){
         for (let node of path){
             console.log(node)
             const [x , y] = node;
+        
             this.grid[x][y].isPath = true
         }
         this.renderGrid()
     }
-        navigateMaze(start, goal, navigationFunction) {
-
+    navigateMaze(start, goal, navigationFunction) {
+            this.resetCell()
+            this.renderGrid()
             let path = null
             if (navigationFunction === "dfs") 
-                path = this.dfs(start, goal);
+                path = this.dfs(start, goal , this.color_path.bind(this));
             else if (navigationFunction === "bfs")
-                path = this.bfs(start, goal);
+            {
+                path = this.bfs(start, goal , this.color_path.bind(this));
+                console.log("this is the path" , path)
+            }
             else if(navigationFunction === "astar")
-                path = this.aStar(start, goal);
+                path = this.aStar(start, goal , this.color_path.bind(this));
+            else if(navigationFunction === "ucs")
+                path = this.uniformCostSearch(start, goal , this.color_path.bind(this));
+            else if(navigationFunction === "greedy")
+                path = this.greedyHeuristicSearch(start, goal , this.color_path.bind(this));
             if (path){
                 this.color_path(path)
                 console.log("Path found:", path);
@@ -355,13 +507,48 @@ class Maze {
                 console.log("Path not found.");
             
             return path;
-        }
-
     }
 
-
+    }
 // Example usage:
-function init()
-{
-    maze = new Maze(10, 10  , 15)
+maze = new Maze(10, 10, 20);
+
+function updateSpeedValue() {
+    const speedInput = document.getElementById("speed");
+    const speedValueDisplay = document.getElementById("speed-value");
+    speedValueDisplay.textContent = speedInput.value;
+    maze.speed = parseInt(speedInput.value);
 }
+function navigateMaze() {
+    // start and goal are a list of two number
+    
+    const start = document.getElementById("start").value.split(",").map(Number);
+    const goal = document.getElementById("goal").value.split(",").map(Number);
+    const navigationFunction = document.getElementById("navigation-function").value;
+    maze.navigateMaze(start, goal, navigationFunction);
+}
+// JavaScript to validate start and goal coordinates
+document.getElementById("navigateButton").addEventListener("click", function() {
+    const startX = parseInt(document.getElementById("startX").value);
+    const startY = parseInt(document.getElementById("startY").value);
+    const goalX = parseInt(document.getElementById("goalX").value);
+    const goalY = parseInt(document.getElementById("goalY").value);
+
+    if (isNaN(startX) || isNaN(startY) || isNaN(goalX) || isNaN(goalY)) {
+        alert("Please enter valid coordinates.");
+        return;
+    }
+
+    if (startX < 1 || startX > 10 || startY < 1 || startY > 10 || goalX < 1 || goalX > 10 || goalY < 1 || goalY > 10) {
+        alert("Coordinates must be between 1 and 10.");
+        return;
+    }
+
+    if (startX === goalX && startY === goalY) {
+        alert("Start and goal coordinates cannot be the same.");
+        return;
+    }
+
+    // Call function to navigate maze with the provided coordinates
+    maze.navigateMaze([startX, startY], [goalX, goalY], document.getElementById("search-method").value);
+});
