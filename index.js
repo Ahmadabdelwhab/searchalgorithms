@@ -474,7 +474,7 @@ greedyHeuristicSearch(start, goal , renderPath) {
     
     }
     heuristic(a, b) {
-        return Math.abs(a[0] - b[0]) * 2 + Math.abs(a[1] - b[1]) * 2;
+        return Math.abs(a[0] - b[0]) * 4 + Math.abs(a[1] - b[1]) * 4;
     }
     color_path(path){
         for (let node of path){

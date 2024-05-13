@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Search Algorithms</title>
     <link rel="stylesheet" href="stylesheet.css">
+    <link rel="icon" type="image/png" href="mazes.png">
 </head>
 <body>
     <!-- craete a button to invoke the method init() in the index.js file-->
     <div id="main">
+        <h1>Search Algorithms</h1>
         <div id="search-container">
-
             <select id="search-method" ">
                 <option value="choose">Choose search algorithm</option>
                 <option value="bfs">Breadth-First Search (BFS)</option>
@@ -20,7 +21,7 @@
                 <option value="ucs">Uniform Cost Search</option>
             </select>
         </div>
-        <div id="">
+        <div id="coordinates">
 
             <label for="startX">Start X:</label>
             <input type="number" id="startX" name="startX" min="1" max="10">
@@ -34,9 +35,23 @@
         <label for="speed">Speed (ms):</label>
         <input type="range" id="speed" name="speed" min="100" max="1000" value="500" onchange="updateSpeedValue()">
         <span id="speed-value">500</span> 
-            <div id="maze-container"></div> 
+        <div id="color-indicators">
+            <span class="color-indicator" style="background-color: #ff6b6b;"></span> Start
+            <span class="color-indicator" style="background-color: #ffe66d;"></span> Goal
+            <hr>
+            <span class="color-indicator" style="background-color: #349090;"></span> Default
+            <span class="color-indicator" style="background-color: #3B322C;"></span> Blocked
+            <span class="color-indicator" style="background-color: #fbb5b1;"></span> Path
+            <span class="color-indicator" style="background-color: #FFA96C;"></span> In Order
+            <hr>
+            <span class="color-indicator" style="background-color: #A3E6DE;"></span> In Stack
+            <span class="color-indicator" style="background-color: #B5446E;"></span> In Queue
+            <span class="color-indicator" style="background-color: #BADEFC;"></span> Visited
+            <hr>
+            <span class="color-indicator" style="background-color: #FFC86D;"></span> In Priority Queue
+        </div>
+        <div id="maze-container"></div> 
         <button id="navigateButton">Navigate Maze</button>
-        
     </div>
     <script src="index.js"></script>
     
