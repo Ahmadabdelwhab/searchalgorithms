@@ -484,8 +484,10 @@ greedyHeuristicSearch(start, goal , renderPath) {
             this.grid[x][y].isPath = true
         }
         this.renderGrid()
+        document.getElementById("navigateButton").disabled = false;
     }
     navigateMaze(start, goal, navigationFunction) {
+            document.getElementById("navigateButton").disabled = true;
             if(this.grid[start[0]][start[1]].blocked)
                 this.grid[start[0]][start[1]].blocked = false;
                 
@@ -512,8 +514,7 @@ greedyHeuristicSearch(start, goal , renderPath) {
                 console.log("Path found:", path);
             }
             else 
-                console.log("Path not found.");
-                
+                console.log("Path not found."); 
             return path;
     }
 
@@ -527,14 +528,7 @@ function updateSpeedValue() {
     speedValueDisplay.textContent = speedInput.value;
     maze.speed = parseInt(speedInput.value);
 }
-function navigateMaze() {
-    // start and goal are a list of two number
-    
-    const start = document.getElementById("start").value.split(",").map(Number);
-    const goal = document.getElementById("goal").value.split(",").map(Number);
-    const navigationFunction = document.getElementById("navigation-function").value;
-    maze.navigateMaze(start, goal, navigationFunction);
-}
+
 // JavaScript to validate start and goal coordinates
 document.getElementById("navigateButton").addEventListener("click", function() {
     const startX = parseInt(document.getElementById("startX").value);
